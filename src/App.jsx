@@ -4,6 +4,7 @@ import Product from "./pages/Product";
 import Navbar from "./components/Navbar";
 import FloatingCart from "./components/FloatingCart";
 import OrderPage from "./pages/OrderPage";
+import MyTransaction from "./pages/MyTransaction";
 import { CartProvider } from "./context/CartContext";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/product" element={<Product />} />
           <Route path="/order" element={<OrderPage />} />
+          <Route path="/my-transaction" element={<MyTransaction />} />
         </Routes>
         <FloatingCart />
       </Router>

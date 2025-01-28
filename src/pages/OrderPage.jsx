@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom"; // Import useLocation
-import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import jsPDF from "jspdf";
 
 function OrderPage() {
-  const location = useLocation(); // Ambil data dari state
-  const { products, total } = location.state || { products: [], total: 0 }; // Default jika state kosong
+  const location = useLocation();
+  const navigate = useNavigate();  // Ganti useHistory dengan useNavigate
+  const { products, total } = location.state || { products: [], total: 0 };
 
   const [formData, setFormData] = useState({
     name: "",
@@ -22,82 +24,94 @@ function OrderPage() {
     });
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    doc.text("Struk Pemesanan", 20, 20);
+    doc.text(`Nama: ${formData.name}`, 20, 30);
+    doc.text(`Email: ${formData.email}`, 20, 40);
+    doc.text(`Nomor HP: ${formData.phone}`, 20, 50);
+    doc.text(`Briefing: ${formData.briefing}`, 20, 60);
 
-  //   try {
-  //     const spreadsheetId = import.meta.env.VITE_SHEET_ID;
-  //     const apiKey = import.meta.env.VITE_API_KEY;
-  //     const range = "Sheet1!A:F"; // Sesuaikan dengan nama sheet dan kolom Anda
+    let yPosition = 70;
+    products.forEach((product) => {
+      doc.text(`${product.name} - Jumlah: ${product.quantity}`, 20, yPosition);
+      doc.text(`Harga: Rp ${product.price.toLocaleString("id-ID")}`, 120, yPosition);
+      yPosition += 10;
+    });
 
-  //     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED&key=${apiKey}`;
+    doc.text(`Total Harga: Rp ${total.toLocaleString("id-ID")}`, 20, yPosition);
 
-  //     // Format data yang akan dikirim
-  //     const values = [
-  //       [
-  //         formData.name,
-  //         formData.email,
-  //         formData.phone,
-  //         formData.briefing,
-  //         JSON.stringify(formData.products),
-  //         new Date().toLocaleString(),
-  //       ],
-  //     ];
-
-  //     // Kirim data ke Google Sheets
-  //     await axios.post(
-  //       url,
-  //       { values },
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     alert("Pesanan berhasil dikirim!");
-  //     setFormData({
-  //       name: "",
-  //       email: "",
-  //       phone: "",
-  //       briefing: "",
-  //       products: [],
-  //     });
-  //   } catch (error) {
-  //     console.error("Error submitting order:", error);
-  //     alert("Terjadi kesalahan. Silakan coba lagi nanti.");
-  //   }
-  // };
+    doc.save("struk_pemesanan.pdf");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+    // Menampilkan animasi loading SweetAlert
+    Swal.fire({
+      title: "Mengirim Pesanan...",
+      html: "Tunggu sebentar...",
+      timerProgressBar: true,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
     try {
-      const scriptURL = import.meta.env.VITE_URL_SCRIPT; // Ganti dengan URL Web App Anda
-      const response = await axios.post(scriptURL, formData, {
+      const apiURL = import.meta.env.VITE_API_URL;
+
+      // Format data untuk dikirim
+      const payload = {
+        date: new Date().toLocaleString(),
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        briefing: formData.briefing,
+        products: JSON.stringify(formData.products),
+      };
+
+      const response = await fetch(apiURL, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(payload),
       });
-  
-      if (response.data.status === "success") {
-        alert("Pesanan berhasil dikirim!");
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          briefing: "",
-          products: [],
+
+      if (response.ok) {
+        Swal.fire({
+          icon: "success",
+          title: "Pesanan Berhasil Dikirim",
+          text: "Pesanan Anda telah berhasil dikirim.",
         });
+
+        // Redirect ke halaman my-transaction dan mengirim data melalui state
+        navigate("/my-transaction", {
+          state: {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            briefing: formData.briefing,
+            products: formData.products,
+            total,
+            date: new Date().toLocaleString(), // Menambahkan tanggal pemesanan
+          },
+        });
+
       } else {
-        throw new Error(response.data.message || "Terjadi kesalahan.");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Gagal mengirim data.");
       }
     } catch (error) {
       console.error("Error submitting order:", error);
-      alert("Terjadi kesalahan. Silakan coba lagi nanti.");
+      Swal.fire({
+        icon: "error",
+        title: "Terjadi Kesalahan",
+        text: "Silakan coba lagi.",
+      });
     }
   };
-  
+
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Halaman Pemesanan</h1>

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { FaShoppingCart, FaTimes } from "react-icons/fa";
+import { FaShoppingCart, FaTimes , FaTrash } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 function FloatingCart() {
-  const { cart, updateQuantity } = useCart();
+  const { cart, updateQuantity, removeFromCart } = useCart(); // Menggunakan removeFromCart
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate(); // Inisialisasi navigate
 
@@ -13,6 +13,7 @@ function FloatingCart() {
   };
 
   const handleCheckout = () => {
+    // Kirim data keranjang ke halaman order
     navigate("/order", {
       state: {
         products: cart,
@@ -75,6 +76,13 @@ function FloatingCart() {
                         className="bg-gray-200 text-gray-600 px-2 py-1 rounded hover:bg-gray-300"
                       >
                         +
+                      </button>
+                      {/* Tombol Hapus Item */}
+                      <button
+                        onClick={() => removeFromCart(item.id)} // Panggil fungsi removeFromCart
+                        className="text-red-500 hover:text-red-600 ml-4"
+                      >
+                        <FaTrash size={20} />
                       </button>
                     </div>
                   </div>
