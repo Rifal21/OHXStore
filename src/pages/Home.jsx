@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Gunakan useNavigate jika menggunakan React Router v6
 import axios from "axios";
 import defaultImage from "../images/web-project-2.jpg";
+import { FaArrowRight } from "react-icons/fa";
 
 function Home() {
   const [categories, setCategories] = useState([]);
@@ -63,8 +64,8 @@ function Home() {
       {/* Produk Preview */}
       <div className="mt-8">
         <h2 className="text-2xl font-bold mb-4">Produk Preview</h2>
-        <div className="overflow-x-auto whitespace-nowrap no-scrollbar">
-          {products.slice(0, 6).map((product, index) => (
+        <div className="overflow-x-auto whitespace-nowrap no-scrollbar flex items-center">
+          {products.slice(0, 7).map((product, index) => (
             <div
               key={product.id}
               className="inline-block bg-white border rounded-lg p-4 mx-2 text-center"
@@ -81,17 +82,27 @@ function Home() {
               </p>
             </div>
           ))}
+          <div
+              className="inline-flex items-center justify-center bg-white border rounded-lg p-4 mx-2 text-center"
+            >
+          <button
+            onClick={() => navigate("/product")}
+            className="inline-flex animate-pulse items-center justify-center transition-all duration-200"
+          >
+            Lihat Lebih Banyak <FaArrowRight size={20} className="ml-2" />
+          </button>
+            </div>
         </div>
         {/* Button untuk melihat lebih banyak produk */}
-        <div className="flex justify-center mt-4">
+        {/* <div className="flex justify-center mt-4">
           <button
             // onClick={() => history.push("/products")} // Untuk React Router v5
-            onClick={() => navigate("/products")} // Jika menggunakan React Router v6
+            onClick={() => navigate("/product")} // Jika menggunakan React Router v6
             className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700 transition-all duration-200"
           >
             Lihat Lebih Banyak
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
