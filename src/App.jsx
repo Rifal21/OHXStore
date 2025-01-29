@@ -8,6 +8,7 @@ import MyTransaction from "./pages/MyTransaction";
 import Login from "./pages/Login";
 import AdminProduk from "./pages/admin/products";
 import { CartProvider } from "./context/CartContext";
+import AdminOrder from "./pages/admin/order";
 
 function App() {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -22,7 +23,10 @@ function App() {
           <Route path="/my-transaction" element={<MyTransaction />} />
           <Route path="/masook" element={<Login />} />
           {user ? (
+            <>         
             <Route path="/admin/product" element={<AdminProduk />} />
+            <Route path="/admin/order" element={<AdminOrder />} />
+            </>
           ) : (
             <Route path="/masook" element={<Login />} />
           )}

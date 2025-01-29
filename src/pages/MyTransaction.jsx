@@ -4,7 +4,7 @@ import jsPDF from "jspdf";
 
 function MyTransaction() {
   const location = useLocation();
-  const { name, email, phone, briefing, products = [], total, date } = location.state || {};
+  const { name, email, phone, briefing, payment, products = [], total, date } = location.state || {};
 
   const generatePDF = () => {
     const doc = new jsPDF();
@@ -41,7 +41,8 @@ function MyTransaction() {
           <p>Email: {email}</p>
           <p>Nomor HP: {phone}</p>
           <p>Briefing: {briefing}</p>
-          <p>Tanggal Pemesanan: {new Date(date).toLocaleString()}</p>
+          <p>Tanggal Pemesanan: {date.toLocaleString('id-ID')}</p>
+          <p>Pembayaran: {payment}</p>
         </div>
         <div>
           <h3 className="font-medium mb-2">Produk yang Dipesan</h3>

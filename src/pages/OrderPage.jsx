@@ -46,8 +46,7 @@ function OrderPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Menampilkan animasi loading SweetAlert
+  
     Swal.fire({
       title: "Mengirim Pesanan...",
       html: "Tunggu sebentar...",
@@ -56,20 +55,31 @@ function OrderPage() {
         Swal.showLoading();
       },
     });
-
+  
     try {
       const apiURL = import.meta.env.VITE_API_URL;
-
+  
+      // Ambil hanya nama, quantity, dan harga dari produk
+      const simplifiedProducts = formData.products.map((product) => ({
+        name: product.name,
+        quantity: product.quantity,
+        price: product.price,
+        total: product.quantity * product.price,
+      }));
+  
       // Format data untuk dikirim
       const payload = {
-        date: new Date().toLocaleString(),
+        date: new Date().toLocaleString('id-ID'),
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         briefing: formData.briefing,
-        products: JSON.stringify(formData.products),
+        products: simplifiedProducts,
+        total: total,
+        payment: formData.payment,
+        status: "Pending",
       };
-
+  
       const response = await fetch(apiURL, {
         method: "POST",
         headers: {
@@ -77,27 +87,26 @@ function OrderPage() {
         },
         body: JSON.stringify(payload),
       });
-
+  
       if (response.ok) {
         Swal.fire({
           icon: "success",
           title: "Pesanan Berhasil Dikirim",
           text: "Pesanan Anda telah berhasil dikirim.",
         });
-
-        // Redirect ke halaman my-transaction dan mengirim data melalui state
+  
         navigate("/my-transaction", {
           state: {
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
             briefing: formData.briefing,
-            products: formData.products,
+            products: simplifiedProducts,
             total,
-            date: new Date().toLocaleString(), // Menambahkan tanggal pemesanan
+            date: new Date().toLocaleString('id-ID'),
+            payment: formData.payment,
           },
         });
-
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || "Gagal mengirim data.");
@@ -111,6 +120,7 @@ function OrderPage() {
       });
     }
   };
+  
 
   return (
     <div className="container mx-auto p-6">
@@ -175,6 +185,21 @@ function OrderPage() {
             Total Harga: Rp {total.toLocaleString("id-ID")}
           </p>
         </div>
+        <div className="">
+            <label className="block font-medium mb-2">Pembayaran</label>
+            <select
+                    name="payment"
+                    className="w-full border rounded p-2"
+                    value={formData.payment}
+                    onChange={handleChange}
+                    required
+            >
+                    <option value="">Pilih Metode Pembayaran</option>
+                    <option value="Transfer Bank BNI">Transfer Bank</option>
+                    <option value="Dana">Dana</option>
+                  </select>
+                </div>
+            <input type="hidden" name="status" value={formData.status} />
         <button
           type="submit"
           className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
